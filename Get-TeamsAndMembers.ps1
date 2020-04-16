@@ -46,39 +46,11 @@ Import-Module -Name MicrosoftTeams
 
 #----------------------------------------------------------[Declarations]----------------------------------------------------------
 
-#Any Global Declarations go here
+$Members = @()
 
 #-----------------------------------------------------------[Functions]------------------------------------------------------------
 
-<#
 
-Function <FunctionName> {
-  Param ()
-
-  Begin {
-    Write-Host '<description of what is going on>...'
-  }
-
-  Process {
-    Try {
-      <code goes here>
-    }
-
-    Catch {
-      Write-Host -BackgroundColor Red "Error: $($_.Exception)"
-      Break
-    }
-  }
-
-  End {
-    If ($?) {
-      Write-Host 'Completed Successfully.'
-      Write-Host ' '
-    }
-  }
-}
-
-#>
 
 #-----------------------------------------------------------[Execution]------------------------------------------------------------
 
@@ -93,8 +65,21 @@ if($connectionstatus -eq $null){
 $teams = Get-Team
 
 foreach($team in $teams){
+ 
+    $Users = Get-TeamUser -GroupId $team.GroupId
 
-    Write-Host $team.DisplayName
-    Get-TeamUser -GroupId $team.GroupId
-    Write-Host
+    foreach($User in $Users){
+        $Members += New-Object -TypeName PSObject -Property @{
+            TeamName = $team.DisplayName
+            TeamID = $team.GroupId
+            MemberName = $User.Name
+            MemberEmail = $User.User
+            MemberRole = $User.Role
+        }
+    }
+
 }
+
+$Members | Export-Csv "C:\Temp\MicrosoftTeamsMembers.csv" -NoTypeInformation
+
+$Members
